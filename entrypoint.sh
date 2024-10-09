@@ -101,9 +101,21 @@ if grep -q "\[mounts\]" "$config"; then
   sed -i -e 's/source =.*/source = '\"$volume\"'/' "$config"
 fi
 
+# Gather all environment variables, excluding GitHub-specific ones
+env_secrets=""
+while IFS='=' read -r key value; do
+  # Skip GitHub-specific variables and empty values
+  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ -n $value ]]; then
+    env_secrets="${env_secrets}${key}=${value}\n"
+  fi
+done < <(env | sort)
+
+# Combine INPUT_SECRETS with env_secrets
+secrets="${env_secrets}${INPUT_SECRETS}"
+
 # Import any required secrets
-if [ -n "$INPUT_SECRETS" ]; then
-  echo $INPUT_SECRETS | tr " " "\n" | flyctl secrets import --app "$app"
+if [ -n "$secrets" ]; then
+  echo $secrets | tr " " "\n" | flyctl secrets import --app "$app"
 fi
 
 # Trigger the deploy of the new version.
