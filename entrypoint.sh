@@ -7,6 +7,11 @@ if [ -n "$INPUT_PATH" ]; then
   cd "$INPUT_PATH" || exit
 fi
 
+STERLING_WAS_HERE="%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+echo "Environment variables available:"
+env | sort | while IFS='=' read -r key value; do
+  echo "- $key"
+done
 PR_NUMBER=$(jq -r .number /github/workflow/event.json)
 if [ -z "$PR_NUMBER" ]; then
   echo "This action only supports pull_request actions."
@@ -33,13 +38,6 @@ if ! echo "$app" | grep "$PR_NUMBER"; then
 fi
 
 
-echo "Environment variables available:"
-env | sort | while IFS='=' read -r key value; do
-  # Skip GitHub-specific variables and empty values
-  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ ! $key == INPUT_* ]] && [[ -n $value ]]; then
-    echo "- $key"
-  fi
-done
 
 # PR was closed - remove the Fly app if one exists and exit.
 if [ "$EVENT_TYPE" = "closed" ]; then
@@ -119,26 +117,14 @@ env | sort | while IFS='=' read -r key value; do
   fi
 done
 
-# Gather all environment variables, excluding GitHub-specific ones
+# Gather all environment variables
 env_secrets=""
 while IFS='=' read -r key value; do
-  # Skip GitHub-specific variables and empty values
-  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ -n $value ]]; then
-    env_secrets="${env_secrets}${key}=${value}\n"
-  fi
+  env_secrets="${env_secrets}${key}=${value}\n"
 done < <(env | sort)
 
 # Combine INPUT_SECRETS with env_secrets
 secrets="${env_secrets}${INPUT_SECRETS}"
-
-
-echo "Environment variables available:"
-env | sort | while IFS='=' read -r key value; do
-  # Skip GitHub-specific variables and empty values
-  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ ! $key == INPUT_* ]] && [[ -n $value ]]; then
-    echo "- $key"
-  fi
-done
 
 # Import any required secrets
 if [ -n "$secrets" ]; then
