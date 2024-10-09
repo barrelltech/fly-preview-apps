@@ -11,7 +11,7 @@ STERLING_WAS_HERE="%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 echo "Environment variables available:"
 env | sort | while IFS='=' read -r key value; do
   case "$key" in
-    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER) ;;
+    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
     *) [ -n "$value" ] && echo "- $key" ;;
   esac
 done
@@ -114,7 +114,7 @@ fi
 # Gather all environment variables
 env_secrets=$(env | sort | while IFS='=' read -r key value; do
   case "$key" in
-    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER) ;;
+    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
     *) echo "${key}=${value}" ;;
   esac
 done)
