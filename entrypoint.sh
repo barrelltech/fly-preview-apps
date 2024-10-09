@@ -32,6 +32,15 @@ if ! echo "$app" | grep "$PR_NUMBER"; then
   exit 1
 fi
 
+
+echo "Environment variables available:"
+env | sort | while IFS='=' read -r key value; do
+  # Skip GitHub-specific variables and empty values
+  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ ! $key == INPUT_* ]] && [[ -n $value ]]; then
+    echo "- $key"
+  fi
+done
+
 # PR was closed - remove the Fly app if one exists and exit.
 if [ "$EVENT_TYPE" = "closed" ]; then
   # destroy app DB
