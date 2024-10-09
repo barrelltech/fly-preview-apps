@@ -7,16 +7,6 @@ if [ -n "$INPUT_PATH" ]; then
   cd "$INPUT_PATH" || exit
 fi
 
-STERLING_WAS_HERE="%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
-echo "Environment variables available:"
-env | sort | while IFS='=' read -r key value; do
-  if [[ -n "$key" && -n "$value" ]]; then
-    case "$key" in
-      GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
-      *) [ -n "$value" ] && echo "- $key" ;;
-    esac
-  fi
-done
 PR_NUMBER=$(jq -r .number /github/workflow/event.json)
 if [ -z "$PR_NUMBER" ]; then
   echo "This action only supports pull_request actions."
@@ -117,7 +107,7 @@ fi
 env_secrets=$(env | sort | while IFS='=' read -r key value; do
   if [[ -n "$key" && -n "$value" ]]; then
     case "$key" in
-      GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
+      GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN|LC_COLLATE|HOSTNAME|CI|CHARSET) ;;
       *) echo "${key}=${value}" ;;
     esac
   fi
