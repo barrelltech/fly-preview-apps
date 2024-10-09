@@ -21,7 +21,7 @@ app="${INPUT_NAME:-pr-$PR_NUMBER-$GITHUB_REPOSITORY_OWNER-$GITHUB_REPOSITORY_NAM
 # Change underscores to hyphens.
 app="${app//_/-}"
 app_db="${app}-db"
-app_db="${INPUT_POSTGRES:-${app_db}}"
+postgres="${INPUT_POSTGRES}"
 region="${INPUT_REGION:-${FLY_REGION:-iad}}"
 org="${INPUT_ORG:-${FLY_ORG:-personal}}"
 image="$INPUT_IMAGE"
@@ -69,13 +69,13 @@ if [ -e "rel/overlays/bin/migrate" ]; then
   # only create db if the app lauched successfully
   if flyctl status --app "$app"; then
     # Attach postgres cluster to the app if specified.
-    if [ -n "$INPUT_POSTGRES" ]; then
-      flyctl postgres attach "$INPUT_POSTGRES" --app "$app" || true
+    if [ -n "$postgres" ]; then
+      flyctl postgres attach "$app_db" --app "$app" || true
     else
       if flyctl status --app "$app_db"; then
         echo "$app_db DB already exists"
       else
-        flyctl postgres create --name "$app_db" --org "$org" --region "$region" --vm-size shared-cpu-1x --initial-cluster-size 1 --volume-size 1
+        flyctl postgres create --image-ref "$postgres" --name "$app_db" --org "$org" --region "$region" --vm-size shared-cpu-1x --initial-cluster-size 1 --volume-size 1
 
         # attaching db to the app if it was created successfully
         if flyctl postgres attach "$app_db" --app "$app" -y; then
