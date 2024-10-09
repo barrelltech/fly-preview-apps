@@ -10,7 +10,10 @@ fi
 STERLING_WAS_HERE="%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "Environment variables available:"
 env | sort | while IFS='=' read -r key value; do
-  echo "- $key"
+  case "$key" in
+    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER) ;;
+    *) [ -n "$value" ] && echo "- $key" ;;
+  esac
 done
 PR_NUMBER=$(jq -r .number /github/workflow/event.json)
 if [ -z "$PR_NUMBER" ]; then
@@ -108,23 +111,16 @@ if grep -q "\[mounts\]" "$config"; then
   sed -i -e 's/source =.*/source = '\"$volume\"'/' "$config"
 fi
 
-
-echo "Environment variables available:"
-env | sort | while IFS='=' read -r key value; do
-  # Skip GitHub-specific variables and empty values
-  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ ! $key == INPUT_* ]] && [[ -n $value ]]; then
-    echo "- $key"
-  fi
-done
-
 # Gather all environment variables
-env_secrets=""
-while IFS='=' read -r key value; do
-  env_secrets="${env_secrets}${key}=${value}\n"
-done < <(env | sort)
+env_secrets=$(env | sort | while IFS='=' read -r key value; do
+  case "$key" in
+    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER) ;;
+    *) echo "${key}=${value}" ;;
+  esac
+done)
 
 # Combine INPUT_SECRETS with env_secrets
-secrets="${env_secrets}${INPUT_SECRETS}"
+secrets="${env_secrets}\n${INPUT_SECRETS}"
 
 # Import any required secrets
 if [ -n "$secrets" ]; then
