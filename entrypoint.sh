@@ -10,10 +10,12 @@ fi
 STERLING_WAS_HERE="%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
 echo "Environment variables available:"
 env | sort | while IFS='=' read -r key value; do
-  case "$key" in
-    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
-    *) [ -n "$value" ] && echo "- $key" ;;
-  esac
+  if [[ -n "$key" && -n "$value" ]]; then
+    case "$key" in
+      GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
+      *) [ -n "$value" ] && echo "- $key" ;;
+    esac
+  fi
 done
 PR_NUMBER=$(jq -r .number /github/workflow/event.json)
 if [ -z "$PR_NUMBER" ]; then
@@ -113,10 +115,12 @@ fi
 
 # Gather all environment variables
 env_secrets=$(env | sort | while IFS='=' read -r key value; do
-  case "$key" in
-    GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
-    *) echo "${key}=${value}" ;;
-  esac
+  if [[ -n "$key" && -n "$value" ]]; then
+    case "$key" in
+      GITHUB_*|RUNNER_*|ACTIONS_*|INPUT_*|SHLVL|LANG|HOME|PWD|PATH|PAGER|FLY_API_TOKEN) ;;
+      *) echo "${key}=${value}" ;;
+    esac
+  fi
 done)
 
 # Combine INPUT_SECRETS with env_secrets
