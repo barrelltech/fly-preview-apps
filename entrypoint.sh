@@ -101,6 +101,15 @@ if grep -q "\[mounts\]" "$config"; then
   sed -i -e 's/source =.*/source = '\"$volume\"'/' "$config"
 fi
 
+
+echo "Environment variables available:"
+env | sort | while IFS='=' read -r key value; do
+  # Skip GitHub-specific variables and empty values
+  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ ! $key == INPUT_* ]] && [[ -n $value ]]; then
+    echo "- $key"
+  fi
+done
+
 # Gather all environment variables, excluding GitHub-specific ones
 env_secrets=""
 while IFS='=' read -r key value; do
@@ -112,6 +121,15 @@ done < <(env | sort)
 
 # Combine INPUT_SECRETS with env_secrets
 secrets="${env_secrets}${INPUT_SECRETS}"
+
+
+echo "Environment variables available:"
+env | sort | while IFS='=' read -r key value; do
+  # Skip GitHub-specific variables and empty values
+  if [[ ! $key == GITHUB_* ]] && [[ ! $key == RUNNER_* ]] && [[ ! $key == ACTIONS_* ]] && [[ ! $key == INPUT_* ]] && [[ -n $value ]]; then
+    echo "- $key"
+  fi
+done
 
 # Import any required secrets
 if [ -n "$secrets" ]; then
