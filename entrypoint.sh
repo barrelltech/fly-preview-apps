@@ -68,22 +68,21 @@ fi
 if [ -e "rel/overlays/bin/migrate" ]; then
   # only create db if the app lauched successfully
   if flyctl status --app "$app"; then
-    # Attach postgres cluster to the app if specified.
-    if [ -n "$postgres" ]; then
+    # If the database app exists then attach to it.
+    if flyctl status --app "$app_db"; then
+      echo "$app_db DB already exists"
       flyctl postgres attach "$app_db" --app "$app" || true
     else
-      if flyctl status --app "$app_db"; then
-        echo "$app_db DB already exists"
-      else
-        flyctl postgres create --image-ref "$postgres" --name "$app_db" --org "$org" --region "$region" --vm-size shared-cpu-1x --initial-cluster-size 1 --volume-size 1
+      # Otherwise create the app
+      flyctl postgres create --image-ref "$postgres" --name "$app_db" --org "$org" --region "$region" --vm-size shared-cpu-1x --initial-cluster-size 1 --volume-size 1
 
-        # attaching db to the app if it was created successfully
-        if flyctl postgres attach "$app_db" --app "$app" -y; then
-          echo "$app_db DB attached to $app"
-        else
-          echo "Error attaching $app_db to $app, attachments exist"
-        fi
+      # attaching db to the app if it was created successfully
+      if flyctl postgres attach "$app_db" --app "$app" -y; then
+        echo "$app_db DB attached to $app"
+      else
+        echo "Error attaching $app_db to $app, attachments exist"
       fi
+      
     fi
   fi
 fi
